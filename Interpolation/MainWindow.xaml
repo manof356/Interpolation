@@ -67,13 +67,16 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height=" Auto"/>
                                 </Grid.RowDefinitions>
                                 <DataGrid x:Name="linearResultDataGrid"
                                           Margin="4"
                                           Grid.Row="0">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Аргумент" />
-                                        <DataGridTextColumn Header="Результат" />
+                                        <DataGridTextColumn Header="Аргумент"
+                                                            Binding="{Binding Argument}" />
+                                        <DataGridTextColumn Header="Результат"
+                                                            Binding="{Binding Result}" />
                                         <DataGridTextColumn Header="" />
                                     </DataGrid.Columns>
                                 </DataGrid>
@@ -84,6 +87,9 @@
                                                                  Step="1">
 
                                 </MyControls:SliderWithTextBlocks>
+                                <Button Grid.Row="2" Content="Получить исх. данные"
+                                        Click="GetDataButton_Click">
+                                </Button>
                             </Grid>
                         </GroupBox>
                     </Grid>
