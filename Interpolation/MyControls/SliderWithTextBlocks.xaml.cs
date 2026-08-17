@@ -12,7 +12,7 @@ namespace Interpolation.MyControls
         {
             InitializeComponent();
         }
-
+        
         // Текст слева (например "Точность:")
         public string LeftText
         {
@@ -25,7 +25,7 @@ namespace Interpolation.MyControls
                                DependencyProperty.Register(nameof(LeftText), 
                                typeof(string), typeof(SliderWithTextBlocks),
                                new PropertyMetadata(""));
-
+        
         // Начальное значение слайдера
         public double Minimum
         {

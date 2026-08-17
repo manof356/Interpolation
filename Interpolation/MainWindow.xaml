@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         
         xmlns:MyControls="clr-namespace:Interpolation.MyControls"
+        xmlns:sg="clr-namespace:Interpolation.MyControls.SelfGrowDataGrid"
         
         FontFamily="Segoe UI"
         FontSize="12"
@@ -30,7 +31,6 @@
             </MenuItem>
         </Menu>
     <!--MenuBar-->
-        
         <Grid>
             <TabControl Margin="4">
                 <!-- Первая вкладка -->
@@ -46,16 +46,16 @@
                         <GroupBox x:Name="linearInputData"
                                   Margin="4"
                                   Header="Исходные данные">
-                            <MyControls:SelfGrowingDataGrid x:Name="linearInpDataGrid"
+                            <sg:SelfGrowingDataGrid x:Name="linearInpDataGrid"
                                                             Margin="4"
                                                             Grid.Row="0">
-                                <MyControls:SelfGrowingDataGrid.Columns>
+                                <sg:SelfGrowingDataGrid.Columns>
                                     <DataGridTextColumn Header="Аргумент"
-                                                        Binding="{Binding Values[0].Value}" />
+                                                        Binding="{Binding Values[0].Value, UpdateSourceTrigger=PropertyChanged}" />
                                     <DataGridTextColumn Header="Значение"
-                                                        Binding="{Binding Values[1].Value}" />
-                                </MyControls:SelfGrowingDataGrid.Columns>
-                            </MyControls:SelfGrowingDataGrid>
+                                                        Binding="{Binding Values[1].Value, UpdateSourceTrigger=PropertyChanged}" />
+                                </sg:SelfGrowingDataGrid.Columns>
+                            </sg:SelfGrowingDataGrid>
 
                         </GroupBox>
                         <!-- Результат -->
@@ -69,17 +69,38 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height=" Auto"/>
                                 </Grid.RowDefinitions>
-                                <DataGrid x:Name="linearResultDataGrid"
-                                          Margin="4"
-                                          Grid.Row="0">
-                                    <DataGrid.Columns>
+                                <!--
+                                    <DataGrid x:Name="linearResultDataGrid"
+                                              Margin="4"
+                                              Grid.Row="0"
+                                              AutoGenerateColumns="False">>
+                                        <DataGrid.Columns>
                                         <DataGridTextColumn Header="Аргумент"
                                                             Binding="{Binding Argument}" />
                                         <DataGridTextColumn Header="Результат"
                                                             Binding="{Binding Result}" />
                                         <DataGridTextColumn Header="" />
                                     </DataGrid.Columns>
-                                </DataGrid>
+                                </DataGrid>-->
+
+                                <sg:SelfGrowingDataGrid x:Name="linearResultDataGrid"
+                                                           Margin="4"
+                                                           Grid.Row="0"
+                                                           AutoGenerateColumns="False">
+                                    <sg:SelfGrowingDataGrid.Columns>
+                                        <DataGridTextColumn Header="Аргумент"
+                                                            Binding="{Binding Values[0].Value, UpdateSourceTrigger=PropertyChanged}" />
+                                        <DataGridTextColumn Header="Результат"
+                                                            IsReadOnly="True"
+                                                            Binding="{Binding Values[1].Value, UpdateSourceTrigger=PropertyChanged}"
+                                                            sg:GridColumnExtensions.IsFillingRequired="False" />
+                                        <DataGridTextColumn Header=""
+                                                            IsReadOnly="True"
+                                                            Binding="{Binding Values[2].Value, UpdateSourceTrigger=PropertyChanged}"
+                                                            sg:GridColumnExtensions.IsFillingRequired="False" />
+                                    </sg:SelfGrowingDataGrid.Columns>
+                                </sg:SelfGrowingDataGrid>
+                                
                                 <MyControls:SliderWithTextBlocks Grid.Row="1"
                                                                  LeftText="Точность:"
                                                                  Minimum="0"
@@ -87,7 +108,7 @@
                                                                  Step="1">
 
                                 </MyControls:SliderWithTextBlocks>
-                                <Button Grid.Row="2" Content="Получить исх. данные"
+                                <Button Grid.Row="2" Content="Посчитать"
                                         Click="GetDataButton_Click">
                                 </Button>
                             </Grid>

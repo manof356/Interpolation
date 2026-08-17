@@ -4,6 +4,12 @@
              xmlns:local="clr-namespace:Interpolation"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Сюда писать ресурсы. Капризная фигня. Надо объединять словари -->
+                <ResourceDictionary Source="ControlStyles/DataGridCellStyle.xaml" />
+
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
