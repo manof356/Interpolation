@@ -27,7 +27,8 @@
                 IsSnapToTickEnabled="True"
                 Minimum="{Binding Minimum, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 Maximum="{Binding Maximum, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                TickFrequency="{Binding Step, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                TickFrequency="{Binding Step, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Value="{Binding Value, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}">
             
         </Slider>
         <!--Правый текст-->

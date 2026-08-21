@@ -58,5 +58,16 @@ namespace Interpolation.MyControls
                                DependencyProperty.Register(nameof(Step), 
                                typeof(double), typeof(SliderWithTextBlocks),
                                new PropertyMetadata(1.0));
+
+        // Текущее значение слайдера — то, что нужно снаружи (в MainWindow)
+        public double Value
+        {
+            get => (double)GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
+        }
+        public static readonly DependencyProperty ValueProperty =
+                               DependencyProperty.Register(nameof(Value),
+                               typeof(double), typeof(SliderWithTextBlocks),
+                               new PropertyMetadata(0.0));
     }
 }

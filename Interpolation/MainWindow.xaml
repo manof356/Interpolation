@@ -65,23 +65,9 @@
                                   Grid.Column="1">
                             <Grid>
                                 <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height=" Auto"/>
+                                    <RowDefinition  />
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <!--
-                                    <DataGrid x:Name="linearResultDataGrid"
-                                              Margin="4"
-                                              Grid.Row="0"
-                                              AutoGenerateColumns="False">>
-                                        <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Аргумент"
-                                                            Binding="{Binding Argument}" />
-                                        <DataGridTextColumn Header="Результат"
-                                                            Binding="{Binding Result}" />
-                                        <DataGridTextColumn Header="" />
-                                    </DataGrid.Columns>
-                                </DataGrid>-->
 
                                 <sg:SelfGrowingDataGrid x:Name="linearResultDataGrid"
                                                            Margin="4"
@@ -104,13 +90,12 @@
                                 <MyControls:SliderWithTextBlocks Grid.Row="1"
                                                                  LeftText="Точность:"
                                                                  Minimum="0"
-                                                                 Maximum="15"
-                                                                 Step="1">
+                                                                 Maximum="5"
+                                                                 Step="1"
+                                                                 Value="{Binding Precision, Mode=TwoWay}">
 
                                 </MyControls:SliderWithTextBlocks>
-                                <Button Grid.Row="2" Content="Посчитать"
-                                        Click="GetDataButton_Click">
-                                </Button>
+                                
                             </Grid>
                         </GroupBox>
                     </Grid>

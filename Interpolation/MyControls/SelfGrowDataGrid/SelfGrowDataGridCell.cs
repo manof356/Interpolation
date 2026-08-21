@@ -11,6 +11,8 @@ namespace Interpolation.MyControls.SelfGrowDataGrid
         private string _value; // приватное значение ячейки
         // свойство того что данная ячейка обязательна для заполнения, по умолчанию true
         public bool IsRequired { get; set; } = true;
+        // Точное число, без округления. Null — если ячейка не результат (например, аргумент)
+        public double? RawValue { get; set; }
         public string Value
         {
             // обычный геттер и сеттер для получения и записи значения ячейки, с уведомлением об изменении свойства
