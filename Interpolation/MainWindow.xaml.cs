@@ -1,10 +1,10 @@
 ﻿using Interpolation.InterpMath;
 using Interpolation.MyControls.SelfGrowDataGrid;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Interpolation
 {
@@ -15,6 +15,10 @@ namespace Interpolation
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        // формула по умолчанию — без чисел, показывается, пока строка не выбрана
+        private const string DefaultFormulaLatex =
+            @"f(x)=f(x_1)+(x-x_1)\frac{f(x_2)-f(x_1)}{x_2-x_1}";
+        private string _formulaLatex = DefaultFormulaLatex;
         public MainWindow()
         {
             InitializeComponent();
@@ -23,6 +27,7 @@ namespace Interpolation
             // подписка на изменения ячеек обеих таблиц
             linearResultDataGrid.CellValueChanged += LinearResultDataGrid_CellValueChanged;
             linearInpDataGrid.CellValueChanged += LinearInpDataGrid_CellValueChanged;
+            linearResultDataGrid.CurrentCellChanged += (s, e) => UpdateFormula();
         }
 
         // функция получения данных из таблицы исходных данных
@@ -106,6 +111,13 @@ namespace Interpolation
         // вытащить данные в таблицу результатов
         private void RecalculateResults()
         {
+            // сброс статуса "Скопировано" — данные могли измениться
+            foreach (var item in linearResultDataGrid.Items)
+            {
+                if (item is SelfGrowingDataGridRow row)
+                    row.Values[3].Value = string.Empty;
+            }
+
             List<DataPoint> points = GetInputData();
             List<double> testPoints = GetResultArguments();
 
@@ -118,6 +130,7 @@ namespace Interpolation
 
             List<double> result = LinearInterpolation.LinterpList(points, testPoints);
             SetResultValues(result);
+            UpdateFormula();
         }
 
         // очищает столбец "Результат" — без исходных данных считать нечего
@@ -129,6 +142,7 @@ namespace Interpolation
                 row.Values[1].RawValue = null;
                 row.Values[1].Value = string.Empty;
             }
+            UpdateFormula();
         }
 
 
@@ -158,7 +172,9 @@ namespace Interpolation
                 if (row.Values[1].RawValue is not double raw) continue; // пропускаем пустые ячейки
 
                 row.Values[1].Value = FormatResult(raw, Precision);
+                row.Values[3].Value = string.Empty; // формат результата поменялся — статус устарел
             }
+            UpdateFormula();
         }
 
 
@@ -184,6 +200,112 @@ namespace Interpolation
                 if (!string.IsNullOrWhiteSpace(row.Values[0].Value)) return true;
             }
             return false;
+        }
+        //  скопировать содержимое таблицы результатов
+        private void CopyAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            var sb = new StringBuilder();
+            var copiedRows = new List<SelfGrowingDataGridRow>();
+
+            foreach (var item in linearResultDataGrid.Items)
+            {
+                if (item is not SelfGrowingDataGridRow row) continue;
+
+                string arg = row.Values[0].Value;
+                string result = row.Values[1].Value;
+
+                // пропускаем пустую (растущую) строку в конце
+                if (string.IsNullOrWhiteSpace(arg) && string.IsNullOrWhiteSpace(result))
+                    continue;
+
+                // приводим разделитель дробной части к точке — для Excel
+                arg = arg?.Replace(',', '.');
+                result = result?.Replace(',', '.');
+
+                // столбцы через Tab — Excel сам разобьёт по ячейкам
+                sb.Append(arg).Append('\t').Append(result).Append(Environment.NewLine);
+                copiedRows.Add(row); 
+            }
+
+            if (sb.Length > 0)
+                Clipboard.SetText(sb.ToString());
+                // проставляем статус только тем строкам, что реально скопировались
+                foreach (var row in copiedRows)
+                    row.Values[3].Value = "Скопировано";
+        }
+
+        // копирует результат одной строки в буфер обмена
+        private void CopyRowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button) return;
+            if (button.Tag is not SelfGrowingDataGridRow row) return;
+
+            string result = row.Values[1].Value?.Replace(',', '.');
+
+            if (string.IsNullOrWhiteSpace(result)) return;
+
+            Clipboard.SetText(result);
+            // сбрасываем статус у всех строк — копирование одной строки отменяет предыдущий статус
+            foreach (var item in linearResultDataGrid.Items)
+            {
+                if (item is SelfGrowingDataGridRow r)
+                    r.Values[3].Value = string.Empty;
+            }
+            row.Values[3].Value = "Скопировано";
+        }
+
+        public string FormulaLatex
+        {
+            get => _formulaLatex;
+            set
+            {
+                _formulaLatex = value;
+                OnPropertyChanged(nameof(FormulaLatex));
+            }
+        }
+
+        // решает какую формулу показать — дефолтную или с числами выбранной строки
+        private void UpdateFormula()
+        {
+            // нет выбранной строки или в ней ещё нет результата — дефолт
+            if (linearResultDataGrid.CurrentCell.Item is not SelfGrowingDataGridRow row
+                || row.Values[1].RawValue is not double y3)
+            {
+                FormulaLatex = DefaultFormulaLatex;
+                return;
+            }
+
+            if (!TryParseCellAsDouble(row.Values[0].Value, out double x3))
+            {
+                FormulaLatex = DefaultFormulaLatex;
+                return;
+            }
+
+            List<DataPoint> points = GetInputData();
+            if (points.Count < 2) // мало исходных данных — дефолт
+            {
+                FormulaLatex = DefaultFormulaLatex;
+                return;
+            }
+
+            // берём ту же пару точек, что использовалась для расчёта
+            List<DataPoint> pair = LinearInterpolation.GetClosedPairs(points, x3);
+            (double x1, double y1, double x2, double y2) = LinearInterpolation.UnwrapTable(pair);
+
+            FormulaLatex = BuildFormulaLatex(x1, y1, x2, y2, x3, y3);
+        }
+
+        // собирает LaTeX-строку с реальными числами, округлёнными по текущей точности
+        private string BuildFormulaLatex(double x1, double y1, double x2, double y2, double x3, double y3)
+        {
+            string sX1 = FormatResult(x1, Precision);
+            string sY1 = FormatResult(y1, Precision);
+            string sX2 = FormatResult(x2, Precision);
+            string sY2 = FormatResult(y2, Precision);
+            string sX3 = FormatResult(x3, Precision);
+            string sY3 = FormatResult(y3, Precision);
+
+            return $@"f({sX3})={sY1}+({sX3}-{sX1})\frac{{{sY2}-{sY1}}}{{{sX2}-{sX1}}}={sY3}";
         }
     }
 }

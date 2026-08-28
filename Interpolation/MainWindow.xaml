@@ -8,26 +8,32 @@
         
         xmlns:MyControls="clr-namespace:Interpolation.MyControls"
         xmlns:sg="clr-namespace:Interpolation.MyControls.SelfGrowDataGrid"
+        xmlns:conv="clr-namespace:Interpolation.Converters"
+        xmlns:controls="clr-namespace:WpfMath.Controls;assembly=WpfMath"
         
         FontFamily="Segoe UI"
         FontSize="12"
         Title="Интерполяция"
-        Height="500"
-        Width="500"
+        Height="750"
+        Width="565"
         ResizeMode="NoResize">
     
     <!--MenuBar-->
     <DockPanel>
-        <Menu DockPanel.Dock="Top">
+        <Menu DockPanel.Dock="Top" Margin="4,0,0,0">
             <MenuItem Header="Файл">
                 <MenuItem Header="Открыть" />
                 <MenuItem Header="Сохранить" />
                 <Separator />
                 <MenuItem Header="Выход" />
             </MenuItem>
-            <MenuItem Header="Правка">
-                <MenuItem Header="Копировать" />
-                <MenuItem Header="Вставить" />
+            <MenuItem Header="Вид">
+                <MenuItem Header="Показать формулу" />
+                <MenuItem Header="Показать график" />
+                <MenuItem Header="Панель ошибок" />
+            </MenuItem>
+            <MenuItem Header="Сравка">
+                <MenuItem Header="О программе" />
             </MenuItem>
         </Menu>
     <!--MenuBar-->
@@ -36,71 +42,126 @@
                 <!-- Первая вкладка -->
                 <TabItem Header="Линейная">
                     <Grid x:Name="linearTabGrid"
-                          Margin="4"
                           ShowGridLines="True">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="200" MinWidth="200"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <!-- Исходные данные -->
-                        <GroupBox x:Name="linearInputData"
-                                  Margin="4"
-                                  Header="Исходные данные">
-                            <sg:SelfGrowingDataGrid x:Name="linearInpDataGrid"
-                                                            Margin="4"
-                                                            Grid.Row="0">
-                                <sg:SelfGrowingDataGrid.Columns>
-                                    <DataGridTextColumn Header="Аргумент"
-                                                        Binding="{Binding Values[0].Value, UpdateSourceTrigger=PropertyChanged}" />
-                                    <DataGridTextColumn Header="Значение"
-                                                        Binding="{Binding Values[1].Value, UpdateSourceTrigger=PropertyChanged}" />
-                                </sg:SelfGrowingDataGrid.Columns>
-                            </sg:SelfGrowingDataGrid>
+                        <!-- Грид 2строки. верх таблицы, низ графики -->
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
 
-                        </GroupBox>
-                        <!-- Результат -->
-                        <GroupBox x:Name="linearResultData"
-                                  Margin="4"
-                                  Header="Результат"
-                                  Grid.Column="1">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition  />
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
+                        <Grid ShowGridLines="False"
+                              Grid.Row="0">
+                            <!-- Грид 2 столбца для групбоксов. слева исх. данные, справа результат -->
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"
+                                                  MinWidth="170" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-                                <sg:SelfGrowingDataGrid x:Name="linearResultDataGrid"
-                                                           Margin="4"
-                                                           Grid.Row="0"
-                                                           AutoGenerateColumns="False">
+                            <!-- Исходные данные в левом столбце-->
+                            <GroupBox x:Name="linearInputData"
+                                      Header="Исходные данные"
+                                      Grid.Column="0"
+                                      Margin="4">
+                                <sg:SelfGrowingDataGrid x:Name="linearInpDataGrid"
+                                                        Margin="4">
                                     <sg:SelfGrowingDataGrid.Columns>
                                         <DataGridTextColumn Header="Аргумент"
                                                             Binding="{Binding Values[0].Value, UpdateSourceTrigger=PropertyChanged}" />
-                                        <DataGridTextColumn Header="Результат"
-                                                            IsReadOnly="True"
-                                                            Binding="{Binding Values[1].Value, UpdateSourceTrigger=PropertyChanged}"
-                                                            sg:GridColumnExtensions.IsFillingRequired="False" />
-                                        <DataGridTextColumn Header=""
-                                                            IsReadOnly="True"
-                                                            Binding="{Binding Values[2].Value, UpdateSourceTrigger=PropertyChanged}"
-                                                            sg:GridColumnExtensions.IsFillingRequired="False" />
+                                        <DataGridTextColumn Header="Значение"
+                                                            Binding="{Binding Values[1].Value, UpdateSourceTrigger=PropertyChanged}" />
                                     </sg:SelfGrowingDataGrid.Columns>
                                 </sg:SelfGrowingDataGrid>
-                                
-                                <MyControls:SliderWithTextBlocks Grid.Row="1"
-                                                                 LeftText="Точность:"
-                                                                 Minimum="0"
-                                                                 Maximum="5"
-                                                                 Step="1"
-                                                                 Value="{Binding Precision, Mode=TwoWay}">
+                            </GroupBox>
+                            <!-- Результат -->
+                            <GroupBox x:Name="linearResultData"
+                                      Header="Результат"
+                                      Grid.Column="1"
+                                      Margin="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
 
-                                </MyControls:SliderWithTextBlocks>
+                                    <sg:SelfGrowingDataGrid x:Name="linearResultDataGrid"
+                                                            Margin="4"
+                                                            Grid.Row="0"
+                                                            AutoGenerateColumns="False">
+                                        <sg:SelfGrowingDataGrid.Columns>
+                                            <DataGridTextColumn Header="Аргумент"
+                                                                Binding="{Binding Values[0].Value, UpdateSourceTrigger=PropertyChanged}" />
+                                            <DataGridTextColumn Header="Результат"
+                                                                IsReadOnly="True"
+                                                                Binding="{Binding Values[1].Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                sg:GridColumnExtensions.IsFillingRequired="False" />
+                                            <DataGridTemplateColumn IsReadOnly="True"
+                                                                    sg:GridColumnExtensions.IsFillingRequired="False">
+                                                <!-- Шапка столбца — общая кнопка "Скопировать всё" -->
+                                                <DataGridTemplateColumn.HeaderTemplate>
+                                                    <DataTemplate>
+                                                        <Button x:Name="CopyAllButton"
+                                                                Content="Скопировать всё"
+                                                                Padding="4"
+                                                                Click="CopyAllButton_Click" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.HeaderTemplate>
+
+                                                <!-- Ячейка столбца — своя кнопка на каждую строку -->
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Button Content="Скопировать"
+                                                                Padding="2"
+                                                                IsEnabled="{Binding Values[1].Value, Converter={StaticResource NullToBoolConverter}}"
+                                                                Tag="{Binding}"
+                                                                Click="CopyRowButton_Click" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+
+                                            <DataGridTextColumn Header=""
+                                                                IsReadOnly="True"
+                                                                Width="85"
+                                                                Binding="{Binding Values[3].Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                sg:GridColumnExtensions.IsFillingRequired="False" />
+
+                                        </sg:SelfGrowingDataGrid.Columns>
+                                    </sg:SelfGrowingDataGrid>
+
+                                    <MyControls:SliderWithTextBlocks Grid.Row="1"
+                                                                     LeftText="Точность:"
+                                                                     Minimum="0"
+                                                                     Maximum="5"
+                                                                     Step="1"
+                                                                     Value="{Binding Precision, Mode=TwoWay}">
+                                    </MyControls:SliderWithTextBlocks>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                        <Grid ShowGridLines="False"
+                              Grid.Row="1"
+                              Margin="4">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="100"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <GroupBox Header="Формула"
+                                      Grid.Row="0">
+                                <controls:FormulaControl Formula="{Binding FormulaLatex}"
+                                                         
+                                                         HorizontalAlignment="Left"
+                                                         VerticalAlignment="Center"
+                                                         Scale="20"
+                                                         Padding="10" />
+                            </GroupBox>
+                            <GroupBox Header="График"
+                                      Grid.Row="1">
                                 
-                            </Grid>
-                        </GroupBox>
+                            </GroupBox>
+                        </Grid>
                     </Grid>
                 </TabItem>
-
                 <!-- Вторая вкладка -->
                 <TabItem Header="Квадратная">
                     <Grid x:Name="squareTabGrid"

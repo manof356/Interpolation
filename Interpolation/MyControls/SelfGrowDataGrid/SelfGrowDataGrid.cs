@@ -26,6 +26,7 @@ namespace Interpolation.MyControls.SelfGrowDataGrid
             SelectionMode = DataGridSelectionMode.Single; // выбор одной ячейки
             CanUserAddRows = false; // запрет на добавление строк пользователем
             CanUserSortColumns = false; // отключаем сортировку по клику на заголовок — она ломает порядок строк
+            CanUserResizeRows = false; // запрет на изменение высоты строк вручную
         }
         // Переопределяем (override) метод OnInitialized, который вызывается при инициализации компонента
         // это тоже своего рода метод инициализатор, но он вызывается после конструктора и после того,

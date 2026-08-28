@@ -1,0 +1,58 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style TargetType="Slider">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--Линия слайдера-->
+                        <Border Grid.Row="0"
+                                Height="1"
+                                Background="#CCCCCC"
+                                VerticalAlignment="Center" />
+
+                        <!--Track считает позицию бегунка сам, обязателен для работы Value-->
+                        <Track x:Name="PART_Track"
+                               Grid.Row="0">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Background="Transparent"
+                                              BorderThickness="0" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Background="Transparent"
+                                              BorderThickness="0" />
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Width="14"
+                                       Height="16">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Polygon Fill="#0225a4"
+                                                     Points="0,0 14,0 14,10 7,16 0,10" />
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+
+                        <!--Засечки снизу. Берут Minimum/Maximum/TickFrequency/Ticks прямо от слайдера-->
+                        <TickBar Grid.Row="1"
+                                 Placement="Bottom"
+                                 Height="8"
+                                 Fill="#666666"
+                                 Minimum="{TemplateBinding Minimum}"
+                                 Maximum="{TemplateBinding Maximum}"
+                                 TickFrequency="{TemplateBinding TickFrequency}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

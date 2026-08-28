@@ -25,6 +25,7 @@
                 Margin="4" 
                 VerticalAlignment="Center"
                 IsSnapToTickEnabled="True"
+                TickPlacement="BottomRight"
                 Minimum="{Binding Minimum, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 Maximum="{Binding Maximum, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 TickFrequency="{Binding Step, RelativeSource={RelativeSource AncestorType=UserControl}}"

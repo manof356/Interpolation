@@ -2,14 +2,18 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Interpolation"
+             xmlns:conv="clr-namespace:Interpolation.Converters"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!-- Сюда писать ресурсы. Капризная фигня. Надо объединять словари -->
                 <ResourceDictionary Source="ControlStyles/DataGridCellStyle.xaml" />
-
+                <!--<ResourceDictionary Source="ControlStyles/SliderStyle.xaml" />-->
             </ResourceDictionary.MergedDictionaries>
+
+            <conv:NullToBoolConverter x:Key="NullToBoolConverter" />
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
