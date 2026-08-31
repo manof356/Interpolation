@@ -10,6 +10,7 @@
         xmlns:sg="clr-namespace:Interpolation.MyControls.SelfGrowDataGrid"
         xmlns:conv="clr-namespace:Interpolation.Converters"
         xmlns:controls="clr-namespace:WpfMath.Controls;assembly=WpfMath"
+        xmlns:oxy="http://oxyplot.org/wpf"
         
         FontFamily="Segoe UI"
         FontSize="12"
@@ -28,8 +29,12 @@
                 <MenuItem Header="Выход" />
             </MenuItem>
             <MenuItem Header="Вид">
-                <MenuItem Header="Показать формулу" />
-                <MenuItem Header="Показать график" />
+                <MenuItem x:Name="ToggleFormulaMenuItem"
+                          Header="Скрыть формулу"
+                          Click="ToggleFormula_Click" />
+                <MenuItem x:Name="ToggleGraphMenuItem"
+                          Header="Скрыть график"
+                          Click="ToggleGraph_Click" />
                 <MenuItem Header="Панель ошибок" />
             </MenuItem>
             <MenuItem Header="Сравка">
@@ -42,11 +47,14 @@
                 <!-- Первая вкладка -->
                 <TabItem Header="Линейная">
                     <Grid x:Name="linearTabGrid"
-                          ShowGridLines="True">
+                          ShowGridLines="False">
                         <!-- Грид 2строки. верх таблицы, низ графики -->
                         <Grid.RowDefinitions>
-                            <RowDefinition />
-                            <RowDefinition />
+                            <RowDefinition Height="*" />
+                            <RowDefinition x:Name="formulaRow"
+                                           Height="100"/>
+                            <RowDefinition x:Name="graphRow"
+                                           Height="250" />
                         </Grid.RowDefinitions>
 
                         <Grid ShowGridLines="False"
@@ -138,28 +146,22 @@
                                 </Grid>
                             </GroupBox>
                         </Grid>
-                        <Grid ShowGridLines="False"
-                              Grid.Row="1"
-                              Margin="4">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="100"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            
-                            <GroupBox Header="Формула"
-                                      Grid.Row="0">
-                                <controls:FormulaControl Formula="{Binding FormulaLatex}"
-                                                         
-                                                         HorizontalAlignment="Left"
-                                                         VerticalAlignment="Center"
-                                                         Scale="20"
-                                                         Padding="10" />
-                            </GroupBox>
-                            <GroupBox Header="График"
-                                      Grid.Row="1">
-                                
-                            </GroupBox>
-                        </Grid>
+                        <GroupBox x:Name="formulaGroupBox"
+                                  Header="Формула"
+                                  Grid.Row="1"
+                                  Margin="4">
+                            <controls:FormulaControl Formula="{Binding FormulaLatex}"
+                                                     HorizontalAlignment="Left"
+                                                     VerticalAlignment="Center"
+                                                     Scale="20"
+                                                     Padding="10" />
+                        </GroupBox>
+                        <GroupBox x:Name="graphGroupBox"
+                                  Header="График"
+                                  Grid.Row="2"
+                                  Margin="4">
+                            <oxy:PlotView x:Name="linearPlotView" />
+                        </GroupBox>
                     </Grid>
                 </TabItem>
                 <!-- Вторая вкладка -->

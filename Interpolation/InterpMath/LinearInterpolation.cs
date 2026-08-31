@@ -9,7 +9,7 @@
         /// <param name="enterTable">Таблица из кортежей на основе которой происходит расчёт</param>
         /// <param name="xes">Таблица аргументов для расчета интерполяции</param>
         /// <returns>Список значений</returns>
-        public static List<double> LinterpList(List<DataPoint> enterTable ,List<double> xes)
+        public static List<double> LinterpList(List<InterpPoint> enterTable ,List<double> xes)
         {
             List<double> result = new List<double>(); // пустой список результата
             foreach (double x in xes) // для каждого аргумента
@@ -25,9 +25,9 @@
         /// <param name="enterTable">Таблица из кортежей на основе которой происходит расчёт</param>
         /// <param name="x">Аргемунт для которого считается интерполяция</param>
         /// <returns>Значение интерполяции</returns>
-        public static double Linterp(List<DataPoint> enterTable, double x)
+        public static double Linterp(List<InterpPoint> enterTable, double x)
         {
-            List<DataPoint> closedPairs = GetClosedPairs(enterTable, x); // получаем пару ближайших к аргументу кортежей
+            List<InterpPoint> closedPairs = GetClosedPairs(enterTable, x); // получаем пару ближайших к аргументу кортежей
             (double x1, double y1, double x2, double y2) = UnwrapTable(closedPairs); // разворачиваем кортеж в 4 переменных и
             return PlainLinterp(x1, y1, x2, y2, x); // передаём их в функцию расчета интерполяции и возвращаем
         }
@@ -59,21 +59,21 @@
         /// <param name="enterTable">Входная таблица</param>
         /// <param name="x">Аргумент для поиска значения</param>
         /// <returns>Список ближайших по аргументу к x кортежей</returns>
-        public static List<DataPoint> GetClosedPairs(List<DataPoint> enterTable, double x)
+        public static List<InterpPoint> GetClosedPairs(List<InterpPoint> enterTable, double x)
         {
             // сортируем исходную таблицу по возрастанию
             enterTable = enterTable.OrderBy(p => p.X).ToList();
             // X меньше или равен минимальному X — берём первые две точки
             if (x <= enterTable[0].X)
-                return new List<DataPoint> { enterTable[0], enterTable[1] };
+                return new List<InterpPoint> { enterTable[0], enterTable[1] };
             // X больше или равен максимальному X — берём последние две точки
             if (x >= enterTable[^1].X)
-                return new List<DataPoint> { enterTable[^2], enterTable[^1] };
+                return new List<InterpPoint> { enterTable[^2], enterTable[^1] };
             // ищем пару, между которой лежит X (включая границы)
             for (int i = 0; i < enterTable.Count - 1; i++)
             {
                 if (enterTable[i].X <= x && x <= enterTable[i + 1].X)
-                    return new List<DataPoint> { enterTable[i], enterTable[i + 1] };
+                    return new List<InterpPoint> { enterTable[i], enterTable[i + 1] };
             }
             return null; // сюда не попадём, если данные корректны
         }
@@ -83,7 +83,7 @@
         /// </summary>
         /// <param name="table">Список кортежей (ближайшая к искомому аргументу пара кортежей)</param>
         /// <returns>Значения списка кортежей в порядке X1 Y1 X2 Y2</returns>
-        public static (double x1, double y1, double x2, double y2) UnwrapTable(List<DataPoint> table)
+        public static (double x1, double y1, double x2, double y2) UnwrapTable(List<InterpPoint> table)
         {
             return (table[0].X, table[0].Y, table[1].X, table[1].Y);
         }
