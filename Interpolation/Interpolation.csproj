@@ -11,6 +11,12 @@
   <ItemGroup>
     <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
     <PackageReference Include="WpfMath" Version="2.1.0" />
+	<Compile Update="MainWindow.Formula.cs">
+		<DependentUpon>MainWindow.xaml</DependentUpon>
+	</Compile>
+	<Compile Update="MainWindow.Plot.cs">
+		<DependentUpon>MainWindow.xaml</DependentUpon>
+	</Compile>
   </ItemGroup>
 
 </Project>
