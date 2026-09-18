@@ -1,0 +1,85 @@
+﻿<Window x:Class="Interpolation.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Interpolation"
+        mc:Ignorable="d"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Title="О программе" Height="320" Width="350">
+    
+    <Grid ShowGridLines="False">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <TextBlock Text="Интерполяция"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center"/>
+        <Grid ShowGridLines="False"
+              Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            
+            <Grid ShowGridLines="False"
+                  Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                
+                <Image Source="/Source/SPDV_logo.png"
+                       Height="128"
+                       Margin="10,0,0,0" 
+                       Grid.Row="0"
+                       HorizontalAlignment="Left"/>
+                
+                <TextBlock TextWrapping="Wrap"
+                           Grid.Row="1"
+                           HorizontalAlignment="Left"
+                           Padding="10">
+                           Разработчик:
+                           <LineBreak />
+                           ООО "Спецпроект ДВ"
+                </TextBlock>
+                
+            </Grid>
+            <Grid ShowGridLines="False"
+                  Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <TextBlock Name="VersionTextBlock"
+                           Grid.Row="0"
+                           VerticalAlignment="Top"
+                           HorizontalAlignment="Right"
+                           Margin="10"/>
+                
+                <!--ПИСАТЬ РУКАМИ ДАТУ!!!-->
+                <TextBlock Grid.Row="0"
+                           Text="от 15.09.2026"
+                           VerticalAlignment="Top"
+                           HorizontalAlignment="Right"
+                           Margin="10,30" />
+
+                <Button Content="Закрыть"
+                        Width="70"
+                        Height="25"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Margin="10"
+                        Grid.Row="1"
+                        Click="CloseButton_Click">
+                </Button>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

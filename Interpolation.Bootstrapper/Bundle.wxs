@@ -1,0 +1,36 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+	<Bundle Id="SpetsproektDV.Interpolyatsiya.Bootstrapper"
+			Name="Интерполяция"
+			Manufacturer="ООО Спецпроект ДВ"
+			Version="1.0.0"
+			UpgradeCode="{566D8896-C34D-463F-9313-324B14F24E3E}">
+
+		<BootstrapperApplication>
+			<bal:WixStandardBootstrapperApplication LicenseUrl="" Theme="hyperlinkLicense" />
+		</BootstrapperApplication>
+
+		<util:RegistrySearch Id="NetDesktopRuntimeSearch"
+							  Root="HKLM"
+							  Key="SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App"
+							  Result="exists"
+							  Variable="NetDesktopRuntimeInstalled" />
+
+		<Chain>
+			<ExePackage Id="NetDesktopRuntime"
+						SourceFile="redist\windowsdesktop-runtime-win-x64.exe"
+						DownloadUrl="https://dotnetcli.blob.core.windows.net/dotnet/WindowsDesktop/8.0.31/windowsdesktop-runtime-8.0.31-win-x64.exe"
+						InstallArguments="/install /quiet /norestart"
+						DetectCondition="NetDesktopRuntimeInstalled"
+						Permanent="yes"
+						Vital="yes"
+						Cache="remove"
+						Compressed="no" />
+
+			<MsiPackage SourceFile="$(var.Interpolation.Setup.TargetPath)" />
+		</Chain>
+
+	</Bundle>
+</Wix>

@@ -49,9 +49,9 @@ namespace Interpolation
         private List<OxyPlot.DataPoint> GetSourcePoints()
         {
             return GetInputData()
-                .Select(p => new OxyPlot.DataPoint(p.X, p.Y))
-                .OrderBy(p => p.X)
-                .ToList();
+                   .Select(p => new OxyPlot.DataPoint(p.X, p.Y))
+                   .OrderBy(p => p.X)
+                   .ToList();
         }
         // обновляем (перерисовываем) график на исходные данные
         private void UpdatePlot()
@@ -86,9 +86,9 @@ namespace Interpolation
         private void UpdateResultPointOnPlot()
         {
             // убираем старую точку результата и старый крестик — рисуем заново каждый раз
-            var oldResultSeries = _linearPlotModel.Series.FirstOrDefault(s => s.Tag as string == "resultPoint");
-            if (oldResultSeries != null)
-                _linearPlotModel.Series.Remove(oldResultSeries);
+            var oldSeries = _linearPlotModel.Series.Where(s => s.Tag as string == "resultPoint").ToList();
+            foreach (var s in oldSeries)
+                _linearPlotModel.Series.Remove(s);
 
             RemoveAnnotationsByTag("resultPoint");
 
@@ -128,6 +128,7 @@ namespace Interpolation
             var old = _linearPlotModel.Annotations.Where(a => a.Tag as string == tag).ToList();
             foreach (var a in old)
                 _linearPlotModel.Annotations.Remove(a);
+                //_linearPlotModel.Series.Remove(a);
         }
 
         // рисует пунктирные линии от точки результата к осям и подписывает значения
@@ -151,6 +152,7 @@ namespace Interpolation
             // ------------------ПОДПИСЬ ТОЧКИ У ТОЧКИ--------------------------
 
             // вертикальная пунктирная линия: от оси X вверх до точки
+
             var vLine = new LineAnnotation
             {
                 Type = LineAnnotationType.Vertical,
@@ -175,6 +177,29 @@ namespace Interpolation
                 StrokeThickness = 1,
                 Tag = "resultPoint"
             };
+
+            /*var vLine = new LineSeries
+            {
+                Color = OxyColors.Gray,
+                StrokeThickness = 1,
+                Dashes = new double[] { 4, 6 }, // 4 — длина штриха, 6 — длина пробела (в толщинах линии)
+                Tag = "resultPoint"
+            };
+            vLine.Points.Add(new OxyPlot.DataPoint(x, yAxis.ActualMinimum));
+            vLine.Points.Add(new OxyPlot.DataPoint(x, y));
+
+            var hLine = new LineSeries
+            {
+                Color = OxyColors.Gray,
+                StrokeThickness = 1,
+                Dashes = new double[] { 4, 6 },
+                Tag = "resultPoint"
+            };
+            hLine.Points.Add(new OxyPlot.DataPoint(xAxis.ActualMinimum, y));
+            hLine.Points.Add(new OxyPlot.DataPoint(x, y));
+
+            _linearPlotModel.Series.Add(vLine);
+            _linearPlotModel.Series.Add(hLine);*/
 
             // подпись значения X под осью
             /*var xLabel = new TextAnnotation
@@ -204,6 +229,7 @@ namespace Interpolation
 
             _linearPlotModel.Annotations.Add(vLine);
             _linearPlotModel.Annotations.Add(hLine);
+
             //_linearPlotModel.Annotations.Add(pointLabel);
             /*_linearPlotModel.Annotations.Add(xLabel);
             _linearPlotModel.Annotations.Add(yLabel);*/

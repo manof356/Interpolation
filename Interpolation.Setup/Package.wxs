@@ -1,0 +1,31 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+	<Package Id="SpetsproektDV.Interpolyatsiya"
+		     Name="Интерполяция"
+		     Manufacturer="ООО Спецпроект ДВ"
+		     Version="1.0.1"
+		     Codepage="1251">
+    <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
+	<MediaTemplate EmbedCab="yes" />
+    <Feature Id="Main">
+		<ComponentGroupRef Id="ProductComponents" />
+		<ComponentRef Id="DesktopShortcut" />
+	</Feature>
+
+	<DirectoryRef Id="DesktopFolder">
+		<Component Id="DesktopShortcut" Guid="{F1BE7033-EF61-44A2-8076-3E57E768F63E}">
+			<Shortcut Id="DesktopShortcutFile"
+						Name="Интерполяция"
+						Target="[INSTALLFOLDER]Interpolation.exe"
+						WorkingDirectory="INSTALLFOLDER" />
+			<RemoveFolder Id="RemoveDesktopFolder" On="uninstall" />
+			<RegistryValue Root="HKCU" 
+							Key="Software\SpetsproektDV\Interpolyatsiya"
+							Name="DesktopShortcut"
+							Type="integer"
+							Value="1"
+							KeyPath="yes" />
+		</Component>
+	</DirectoryRef>
+
+	</Package>
+</Wix>

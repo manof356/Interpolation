@@ -1,9 +1,7 @@
-﻿using Interpolation.InterpMath;
+﻿using Interpolation.Enums;
+using Interpolation.InterpMath;
 using Interpolation.MyControls.SelfGrowDataGrid;
-using OxyPlot;
-using OxyPlot.Axes;
-using OxyPlot.Series;
-using OxyPlot.Annotations;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Text;
@@ -37,11 +35,14 @@ namespace Interpolation
         {
             InitializeComponent();
             DataContext = this; // теперь биндинги видят свойства MainWindow
+            // перепроверяем дубликаты при любом изменении состава строк — например, при удалении строки
+            ((INotifyCollectionChanged)linearInpDataGrid.Items).CollectionChanged += (s, e) => RefreshAllStatuses();
             // подписка на изменения ячеек обеих таблиц
             linearResultDataGrid.CellValueChanged += LinearResultDataGrid_CellValueChanged;
             linearInpDataGrid.CellValueChanged += LinearInpDataGrid_CellValueChanged;
             linearResultDataGrid.CurrentCellChanged += (s, e) => UpdateSelectedRowDisplay();
-
+            linearInpDataGrid.CellEditEnding += LinearInpDataGrid_CellEditEnding;
+            linearResultDataGrid.CellEditEnding += LinearResultDataGrid_CellEditEnding;
             InitializePlot();
             Precision = 3; // точность по умолчанию — 3 знака после запятой
         }
@@ -125,8 +126,8 @@ namespace Interpolation
             }
             List<InterpPoint> points = GetInputData();
             List<double> testPoints = GetResultArguments();
-            // для интерполяции нужно минимум 2 исходные точки
-            if (points.Count < 2)
+            // для интерполяции нужно минимум 2 исходные точки ИЛИ есть повторяющиеся аргументы
+            if (points.Count < 2 || HasDuplicateArguments(points))
             {
                 ClearResultValues();
                 return;
@@ -171,6 +172,8 @@ namespace Interpolation
         private void LinearResultDataGrid_CellValueChanged(SelfGrowingDataGridRow row, int columnIndex)
         {
             if (columnIndex != 0) return; // реагируем только на столбец "Аргумент"
+            if (string.IsNullOrEmpty(row.Values[0].Value))
+                RefreshResultRangeStatuses();
             RecalculateResults();
         }
 
@@ -178,9 +181,14 @@ namespace Interpolation
         private void LinearInpDataGrid_CellValueChanged(SelfGrowingDataGridRow row, int columnIndex)
         {
             UpdatePlot(); // график обновляется всегда, независимо от того, заполнены ли результаты
+            // аргумент полностью очищен (например, клавишей Delete) — пересчитываем дубликаты
+            // сразу, не дожидаясь потери фокуса: очистка — не посимвольный ввод, а разовое действие
+            if (columnIndex == 0 && string.IsNullOrEmpty(row.Values[0].Value))
+                RefreshAllStatuses(); // было ValidateInputDuplicates() — теперь оба сразу
             if (!AnyResultArgumentFilled()) return;
             RecalculateResults();
         }
+
         // проверка: есть ли хотя бы одна заполненная ячейка "Аргумент" в таблице результатов
         private bool AnyResultArgumentFilled()
         {
@@ -191,6 +199,7 @@ namespace Interpolation
             }
             return false;
         }
+
         //  скопировать содержимое таблицы результатов
         private void CopyAllButton_Click(object sender, RoutedEventArgs e)
         {
@@ -209,13 +218,13 @@ namespace Interpolation
                 result = result?.Replace(',', '.');
                 // столбцы через Tab — Excel сам разобьёт по ячейкам
                 sb.Append(arg).Append('\t').Append(result).Append(Environment.NewLine);
-                copiedRows.Add(row); 
+                copiedRows.Add(row);
             }
             if (sb.Length > 0)
                 Clipboard.SetText(sb.ToString());
-                // проставляем статус только тем строкам, что реально скопировались
-                foreach (var row in copiedRows)
-                    row.Values[3].Value = "Скопировано";
+            // проставляем статус только тем строкам, что реально скопировались
+            foreach (var row in copiedRows)
+                row.Values[3].Value = "Скопировано";
         }
 
         // копирует результат одной строки в буфер обмена
@@ -242,28 +251,215 @@ namespace Interpolation
             UpdateFormula();
             UpdateResultPointOnPlot();
         }
+
         // скрыть строку grid (общая функция)
-        private void ToggleRow(RowDefinition row, MenuItem menuItem, ref GridLength lastHeight, string showText, string hideText)
+        private void ToggleRow(RowDefinition row, MenuItem menuItem, ref GridLength lastHeight,
+                               string showText, string hideText, FrameworkElement elementToCollapse)
         {
             bool isVisible = row.Height.Value > 0;
             if (isVisible)
             {
                 lastHeight = row.Height;
                 row.Height = new GridLength(0);
+                elementToCollapse.Visibility = Visibility.Collapsed;
             }
             else
+            {
                 row.Height = lastHeight;
+                elementToCollapse.Visibility = Visibility.Visible;
+            }
             menuItem.Header = isVisible ? showText : hideText;
         }
+
+        // показать окно справки
+        private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var aboutWindow = new AboutWindow();
+            aboutWindow.Owner = this;
+            aboutWindow.ShowDialog();
+        }
+
         // показать/скрыть формулу
         private void ToggleFormula_Click(object sender, RoutedEventArgs e)
         {
-            ToggleRow(formulaRow, ToggleFormulaMenuItem, ref lastFormulaHeight, "Показать формулу", "Скрыть формулу");
+            bool isChecked = FormulaMenuItem.IsChecked;
+            if (isChecked)
+                formulaRow.Height = lastFormulaHeight;
+            else
+            {
+                lastFormulaHeight = formulaRow.Height;
+                formulaRow.Height = new GridLength(0);
+            }
         }
+
         // показать скрыть график
         private void ToggleGraph_Click(object sender, RoutedEventArgs e)
         {
-            ToggleRow(graphRow, ToggleGraphMenuItem, ref lastGraphHeight, "Показать график", "Скрыть график");
+            bool isChecked = GraphMenuItem.IsChecked;
+            if (isChecked)
+                graphRow.Height = lastGraphHeight;
+            else
+            {
+                lastGraphHeight = graphRow.Height;
+                graphRow.Height = new GridLength(0);
+            }
+        }
+
+        // проверка дубликатов при выходе из ячейки столбца "Аргумент"
+        private void LinearInpDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            int columnIndex = linearInpDataGrid.Columns.IndexOf(e.Column);
+            if (columnIndex != 0) return; // реагируем только на "Аргумент"
+            RefreshAllStatuses();
+        }
+
+        // обновление иконок Warning/Info при выходе из ячейки "Аргумент" в таблице результатов
+        private void LinearResultDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            int columnIndex = linearResultDataGrid.Columns.IndexOf(e.Column);
+            if (columnIndex != 0) return; // реагируем только на "Аргумент"
+            RefreshResultRangeStatuses();
+        }
+
+        // выносим сброс статусов отдельным методом
+        private void ClearResultStatuses()
+        {
+            foreach (var item in linearResultDataGrid.Items)
+            {
+                if (item is not SelfGrowingDataGridRow row) continue;
+                row.Status = RowStatus.None;
+                row.StatusMessage = string.Empty;
+            }
+        }
+
+        // подсвечивает строки, где аргумент повторяется
+        private void ValidateInputDuplicates()
+        {
+            var rows = linearInpDataGrid.Items.OfType<SelfGrowingDataGridRow>().ToList();
+
+            // сбрасываем предыдущую подсветку — картина могла измениться
+            foreach (var row in rows)
+            {
+                if (row.Status == RowStatus.Error)
+                {
+                    row.Status = RowStatus.None;
+                    row.StatusMessage = string.Empty;
+                }
+            }
+
+            // группируем строки по значению аргумента, пропуская пустые/некорректные
+            var groups = rows
+                .Select(row => new
+                {
+                    Row = row,
+                    IsValid = TryParseCellAsDouble(row.Values[0].Value, out double x),
+                    Value = x
+                })
+                .Where(item => item.IsValid)
+                .GroupBy(item => item.Value);
+
+            // помечаем строки, где аргумент встречается больше одного раза
+            foreach (var group in groups.Where(g => g.Count() > 1))
+            {
+                foreach (var item in group)
+                {
+                    item.Row.Status = RowStatus.Error;
+                    item.Row.StatusMessage = "Аргумент повторяется — исправьте значение";
+                }
+            }
+        }
+
+        // проверка: есть ли повторяющиеся аргументы среди точек
+        private bool HasDuplicateArguments(List<InterpPoint> points)
+        {
+            return points.Select(p => p.X).GroupBy(x => x).Any(g => g.Count() > 1);
+        }
+
+        // проставляет Warning/Info для строк результата в зависимости от диапазона исходных данных
+        private void ValidateResultRange(List<InterpPoint> points)
+        {
+            var rows = linearResultDataGrid.Items.OfType<SelfGrowingDataGridRow>().ToList();
+            double min = points.Min(p => p.X);
+            double max = points.Max(p => p.X);
+
+            foreach (var row in rows)
+            {
+                string raw = row.Values[0].Value;
+
+                // ячейка реально пустая — сбрасываем статус
+                if (string.IsNullOrEmpty(raw))
+                {
+                    row.Status = RowStatus.None;
+                    row.StatusMessage = string.Empty;
+                    continue;
+                }
+
+                // промежуточный невалидный ввод (например "5,") — не трогаем текущий статус,
+                // чтобы не моргало во время печати
+                if (!TryParseCellAsDouble(raw, out double x))
+                    continue;
+
+                if (x < min || x > max)
+                {
+                    row.Status = RowStatus.Warning;
+                    row.StatusMessage = "Значение вне диапазона исходных данных — результат получен экстраполяцией";
+                }
+                else if (points.Any(p => p.X == x))
+                {
+                    row.Status = RowStatus.Info;
+                    row.StatusMessage = "Значение уже есть в исходных данных — интерполяция не требуется";
+                }
+                else
+                {
+                    row.Status = RowStatus.None;
+                    row.StatusMessage = string.Empty;
+                }
+            }
+        }
+
+        // обновляет иконки Warning/Info в таблице результатов — вызывается только
+        // при потере фокуса (или другом "разовом" событии), не в реальном времени
+        private void RefreshResultRangeStatuses()
+        {
+            List<InterpPoint> points = GetInputData(); // все валидные точки, дубликаты не важны
+            if (points.Count == 0)
+                ClearResultStatuses(); // исходных данных вообще нет — сравнивать не с чем
+            else
+                ValidateResultRange(points);
+            ValidateResultDuplicates(); // добавили — эта строка потерялась при восстановлении
+        }
+
+        // подсвечивает строки в таблице результатов, где аргумент повторяется сам с собой
+        // (независимо от исходных данных) — приоритет Error поверх Warning/Info
+        private void ValidateResultDuplicates()
+        {
+            var rows = linearResultDataGrid.Items.OfType<SelfGrowingDataGridRow>().ToList();
+            var groups = rows
+                .Select(row => new
+                {
+                    Row = row,
+                    IsValid = TryParseCellAsDouble(row.Values[0].Value, out double x),
+                    Value = x
+                })
+                .Where(item => item.IsValid)
+                .GroupBy(item => item.Value);
+
+            foreach (var group in groups.Where(g => g.Count() > 1))
+            {
+                foreach (var item in group)
+                {
+                    item.Row.Status = RowStatus.Error;
+                    item.Row.StatusMessage = "Аргумент повторяется в таблице результатов";
+                }
+            }
+        }
+
+        // единая точка обновления ВСЕХ статусов (крестики слева + иконки справа) —
+        // вызывается при любом значимом изменении столбца "Аргумент" в любой из двух таблиц
+        private void RefreshAllStatuses()
+        {
+            ValidateInputDuplicates();      // крестики слева — дубли в исходных данных
+            RefreshResultRangeStatuses();   // иконки справа — диапазон + дубли внутри результатов
         }
     }
 }

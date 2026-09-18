@@ -27,6 +27,8 @@ namespace Interpolation.MyControls.SelfGrowDataGrid
             CanUserAddRows = false; // запрет на добавление строк пользователем
             CanUserSortColumns = false; // отключаем сортировку по клику на заголовок — она ломает порядок строк
             CanUserResizeRows = false; // запрет на изменение высоты строк вручную
+            CanUserReorderColumns = false; // запрет на изменение порядка столбцов вручную
+            CanUserResizeColumns = false; // запрет на изменение ширина столбца вручную
         }
         // Переопределяем (override) метод OnInitialized, который вызывается при инициализации компонента
         // это тоже своего рода метод инициализатор, но он вызывается после конструктора и после того,

@@ -9,10 +9,12 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Сюда писать ресурсы. Капризная фигня. Надо объединять словари -->
                 <ResourceDictionary Source="ControlStyles/DataGridCellStyle.xaml" />
+                <ResourceDictionary Source="Source/StatusIcons.xaml" />
                 <!--<ResourceDictionary Source="ControlStyles/SliderStyle.xaml" />-->
             </ResourceDictionary.MergedDictionaries>
 
             <conv:NullToBoolConverter x:Key="NullToBoolConverter" />
+            <conv:RowStatusToIconConverter x:Key="RowStatusToIconConverter" />
 
         </ResourceDictionary>
     </Application.Resources>

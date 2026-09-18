@@ -6,7 +6,16 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Source\Linterp.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Source\SPDV_logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Source\Linterp.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
@@ -17,6 +26,10 @@
 	<Compile Update="MainWindow.Plot.cs">
 		<DependentUpon>MainWindow.xaml</DependentUpon>
 	</Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Source\SPDV_logo.png" />
   </ItemGroup>
 
 </Project>

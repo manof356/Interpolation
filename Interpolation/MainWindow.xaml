@@ -12,11 +12,13 @@
         xmlns:controls="clr-namespace:WpfMath.Controls;assembly=WpfMath"
         xmlns:oxy="http://oxyplot.org/wpf"
         
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+        
         FontFamily="Segoe UI"
         FontSize="12"
         Title="Интерполяция"
         Height="750"
-        Width="565"
+        Width="590"
         ResizeMode="NoResize">
     
     <!--MenuBar-->
@@ -29,16 +31,23 @@
                 <MenuItem Header="Выход" />
             </MenuItem>
             <MenuItem Header="Вид">
-                <MenuItem x:Name="ToggleFormulaMenuItem"
-                          Header="Скрыть формулу"
+                <MenuItem x:Name="FormulaMenuItem"
+                          Header="Формула"
+                          IsCheckable="True"
+                          IsChecked="True"
+                          StaysOpenOnClick="True"
                           Click="ToggleFormula_Click" />
-                <MenuItem x:Name="ToggleGraphMenuItem"
-                          Header="Скрыть график"
+                <MenuItem x:Name="GraphMenuItem"
+                          Header="График"
+                          IsCheckable="True"
+                          IsChecked="True"
+                          StaysOpenOnClick="True"
                           Click="ToggleGraph_Click" />
-                <MenuItem Header="Панель ошибок" />
             </MenuItem>
-            <MenuItem Header="Сравка">
-                <MenuItem Header="О программе" />
+            <MenuItem Header="Справка">
+                <MenuItem Name="AboutProgramme"
+                          Header="О программе"
+                          Click="AboutMenuItem_Click" />
             </MenuItem>
         </Menu>
     <!--MenuBar-->
@@ -61,7 +70,7 @@
                               Grid.Row="0">
                             <!-- Грид 2 столбца для групбоксов. слева исх. данные, справа результат -->
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170"
+                                <ColumnDefinition Width="180"
                                                   MinWidth="170" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
@@ -73,12 +82,26 @@
                                       Margin="4">
                                 <sg:SelfGrowingDataGrid x:Name="linearInpDataGrid"
                                                         Margin="4">
+
+                                    <sg:SelfGrowingDataGrid.RowHeaderTemplate>
+                                        <DataTemplate>
+                                            <Image Source="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Item.Status, Converter={StaticResource RowStatusToIconConverter}}"
+                                                   Width="14"
+                                                   Height="14"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   ToolTip="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Item.StatusMessage}"
+                                                   ToolTipService.InitialShowDelay="100" />
+                                        </DataTemplate>
+                                    </sg:SelfGrowingDataGrid.RowHeaderTemplate>
+
                                     <sg:SelfGrowingDataGrid.Columns>
                                         <DataGridTextColumn Header="Аргумент"
                                                             Binding="{Binding Values[0].Value, UpdateSourceTrigger=PropertyChanged}" />
                                         <DataGridTextColumn Header="Значение"
                                                             Binding="{Binding Values[1].Value, UpdateSourceTrigger=PropertyChanged}" />
                                     </sg:SelfGrowingDataGrid.Columns>
+                                
                                 </sg:SelfGrowingDataGrid>
                             </GroupBox>
                             <!-- Результат -->
@@ -96,6 +119,19 @@
                                                             Margin="4"
                                                             Grid.Row="0"
                                                             AutoGenerateColumns="False">
+
+                                        <sg:SelfGrowingDataGrid.RowHeaderTemplate>
+                                            <DataTemplate>
+                                                <Image Source="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Item.Status, Converter={StaticResource RowStatusToIconConverter}}"
+                                                       Width="14"
+                                                       Height="14"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       ToolTip="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Item.StatusMessage}"
+                                                       ToolTipService.InitialShowDelay="100" />
+                                            </DataTemplate>
+                                        </sg:SelfGrowingDataGrid.RowHeaderTemplate>
+
                                         <sg:SelfGrowingDataGrid.Columns>
                                             <DataGridTextColumn Header="Аргумент"
                                                                 Binding="{Binding Values[0].Value, UpdateSourceTrigger=PropertyChanged}" />

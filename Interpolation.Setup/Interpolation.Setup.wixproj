@@ -1,0 +1,19 @@
+﻿<Project Sdk="WixToolset.Sdk/6.0.2">
+
+	<PropertyGroup>
+		<DefineConstants>PublishDir=..\Interpolation\bin\Release\net8.0-windows\win-x64\publish\;$(DefineConstants)</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="WixToolset.Heat" Version="6.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<HarvestDirectory Include="..\Interpolation\bin\Release\net8.0-windows\win-x64\publish\"
+						   ComponentGroupName="ProductComponents"
+						   DirectoryRefId="INSTALLFOLDER"
+						   PreprocessorVariable="var.PublishDir"
+						   SuppressRootDirectory="true" />
+	</ItemGroup>
+
+</Project>
